@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id           Int            @id @default(autoincrement())
+  login        String
+  password     String
+  phone        String?
+  full_name    String
+  Expenditures Expenditures[]
+  Orders       Orders[]
+}
+
+model Meals {
+  id         Int          @id @default(autoincrement())
+  name       String
+  price      Int
+  OrderMeals OrderMeals[]
+}
+
+model Orders {
+  id         Int          @id @default(autoincrement())
+  status     OrderStatus  @default(OPENED)
+  user_id    Int
+  user       Users        @relation(fields: [user_id], references: [id])
+  OrderMeals OrderMeals[]
+}
+
+model OrderMeals {
+  meal_id  Int
+  meal     Meals  @relation(fields: [meal_id], references: [id])
+  order_id Int
+  order    Orders @relation(fields: [order_id], references: [id])
+  price    Int
+  quantity Int
+
+  @@id([meal_id, order_id])
+}
+
+model Expenditures {
+  id      Int     @id @default(autoincrement())
+  name    String
+  amount  Int
+  comment String?
+  user_id Int
+  user    Users   @relation(fields: [user_id], references: [id])
+}
+
+model CashTransactions {
+  id          Int        @id @default(autoincrement())
+  amount      Int
+  type        CashStatus
+  source_id   Int
+  source_name String
+}
+
+enum OrderStatus {
+  OPENED
+  CLOSED
+  CANCELED
+}
+
+enum CashStatus {
+  INCOME
+  OUTCOME
+}
