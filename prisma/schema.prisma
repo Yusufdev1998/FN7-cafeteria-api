@@ -26,7 +26,7 @@ model Users {
 
 model Meals {
   id         Int          @id @default(autoincrement())
-  name       String
+  name       String       @unique()
   price      Int
   OrderMeals OrderMeals[]
 }

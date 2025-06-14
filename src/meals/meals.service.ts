@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { CreateMealDto } from './dto/create-meal.dto';
-import { UpdateMealDto } from './dto/update-meal.dto';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class MealsService {
-  create(createMealDto: CreateMealDto) {
-    return 'This action adds a new meal';
+  constructor(private prisma: PrismaService) {}
+  create(createMealDto: any) {
+    return this.prisma.meals.create({ data: createMealDto });
   }
 
   findAll() {
-    return `This action returns all meals`;
+    return this.prisma.meals.findMany();
   }
 
   findOne(id: number) {
     return `This action returns a #${id} meal`;
   }
 
-  update(id: number, updateMealDto: UpdateMealDto) {
-    return `This action updates a #${id} meal`;
+  update(id: number, updateMealDto: any) {
+    return this.prisma.meals.update({
+      where: {
+        id,
+      },
+      data: updateMealDto,
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} meal`;
+    return this.prisma.meals.delete({ where: { id } });
   }
 }
