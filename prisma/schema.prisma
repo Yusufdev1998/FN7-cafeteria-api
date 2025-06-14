@@ -19,7 +19,7 @@ model Users {
   login        String
   password     String
   phone        String?
-  full_name    String
+  fullName     String
   Expenditures Expenditures[]
   Orders       Orders[]
 }
