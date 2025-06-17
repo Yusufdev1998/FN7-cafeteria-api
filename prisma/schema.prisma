@@ -60,11 +60,12 @@ model Expenditures {
 }
 
 model CashTransactions {
-  id          Int        @id @default(autoincrement())
   amount      Int
   type        CashStatus
   source_id   Int
-  source_name String
+  source_name CashSources
+
+  @@id([source_id, source_name])
 }
 
 enum OrderStatus {
@@ -76,4 +77,9 @@ enum OrderStatus {
 enum CashStatus {
   INCOME
   OUTCOME
+}
+
+enum CashSources {
+  ORDERS
+  EXPENDITURES
 }

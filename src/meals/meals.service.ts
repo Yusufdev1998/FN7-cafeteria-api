@@ -13,7 +13,7 @@ export class MealsService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} meal`;
+    return this.prisma.meals.findFirst({ where: { id } });
   }
 
   update(id: number, updateMealDto: any) {

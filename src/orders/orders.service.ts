@@ -1,26 +1,60 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { CashSources, CashStatus, OrderStatus } from 'generated/prisma';
+import { PrismaService } from 'src/prisma.service';
 
+const user_id = 1;
 @Injectable()
 export class OrdersService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(private prisma: PrismaService) {}
+  createOrder(data: any) {
+    return this.prisma.orders.create({
+      data: {
+        user_id,
+        OrderMeals: {
+          createMany: {
+            data: data.meals,
+          },
+        },
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all orders`;
+  getOrder(id: number) {
+    return this.prisma.orders.findFirst({
+      where: { id },
+      include: {
+        OrderMeals: true,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
-  }
+  async changeOrderStatus(id: number, status: OrderStatus) {
+    const updated = await this.prisma.orders.update({
+      where: { id },
+      data: {
+        status,
+      },
+      include: {
+        OrderMeals: true,
+      },
+    });
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
-  }
+    if (status === OrderStatus.CLOSED) {
+      const money = updated.OrderMeals.reduce(
+        (acc, el) => acc + el.price * el.quantity,
+        0,
+      );
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+      await this.prisma.cashTransactions.create({
+        data: {
+          source_id: updated.id,
+          source_name: CashSources.ORDERS,
+          amount: money,
+          type: CashStatus.INCOME,
+        },
+      });
+    }
+
+    return updated;
   }
 }
